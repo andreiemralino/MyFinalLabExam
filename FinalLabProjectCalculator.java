@@ -75,7 +75,7 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
             {"7", "8", "9", "+"},
             {"4", "5", "6", ""},
             {"1", "2", "3", "="},
-            {"0", "0", ".", ""}
+            {"+/-", "0", ".", ""}
         };
 
         GridBagConstraints gbc = new GridBagConstraints();
@@ -100,12 +100,14 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
                 gbc.gridx = col;
                 gbc.gridy = row;
 
-                if (text.equals("0") && row == 5 && col == 0) {
-                    gbc.gridwidth = 2;
+                if (text.equals("0") && row == 5 && col == 1) {
+                    gbc.gridwidth = 1;
                 } else if (text.equals("+") && row == 2) {
                     gbc.gridheight = 2;
                 } else if (text.equals("=") && row == 4) {
                     gbc.gridheight = 2;
+                } else if (text.equals("+/-") && row == 5 && col == 0) {
+                    gbc.gridwidth = 1;
                 } else {
                     gbc.gridwidth = 1;
                     gbc.gridheight = 1;
@@ -295,6 +297,32 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
                 }
                 break;
 
+            case "+/-":
+                if (currentInput.length() == 0) {
+                    // Don't allow just a negative sign with no number
+                    return;
+                } else if ("+-*/^%".indexOf(last) >= 0) {
+                    // Don't allow negative sign after operator (except for subtraction case)
+                    if (last != '-') {
+                        return;
+                    }
+                } else {
+                    int numStart = findNumberStart(currentInput.toString(), currentInput.length() - 1);
+                    if (numStart >= 0) {
+                        String numberStr = currentInput.substring(numStart);
+                        // Prevent toggling if we already have a negative sign
+                        if (numberStr.startsWith("-") && numberStr.length() > 1) {
+                            // Remove the negative sign
+                            currentInput.replace(numStart, currentInput.length(), numberStr.substring(1));
+                        } else if (!numberStr.startsWith("-") && numberStr.length() > 0) {
+                            // Add negative sign only if there's a number
+                            currentInput.replace(numStart, currentInput.length(), "-" + numberStr);
+                        }
+                    }
+                }
+                expressionField.setText(currentInput.toString());
+                break;
+
             case "=":
                 if (currentInput.length() == 0) return;
                 try {
@@ -400,13 +428,6 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
         }
     }
 
-    private BigDecimal evaluateExpression(String expr) throws Exception {
-        expr = expr.trim();
-        expr = processSquareRoots(expr);
-        expr = processPercentages(expr);
-        return evaluateFinal(expr);
-    }
-
     private String processSquareRoots(String expr) throws Exception {
         StringBuilder sb = new StringBuilder(expr);
         int sqrtIndex;
@@ -415,15 +436,13 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
             int numStart = sqrtIndex + 1;
             int numEnd = numStart;
             
-            while (numEnd < sb.length() && 
-                  (Character.isDigit(sb.charAt(numEnd)) || 
-                   sb.charAt(numEnd) == '.' || 
-                   sb.charAt(numEnd) == 'E' || 
-                   sb.charAt(numEnd) == 'e' ||
-                   (sb.charAt(numEnd) == '-' && numEnd > 0 && 
-                    (sb.charAt(numEnd-1) == 'E' || sb.charAt(numEnd-1) == 'e')) ||
-                   (sb.charAt(numEnd) == '+' && numEnd > 0 && 
-                    (sb.charAt(numEnd-1) == 'E' || sb.charAt(numEnd-1) == 'e')))) {
+            while (numEnd < sb.length() &&
+                (Character.isDigit(sb.charAt(numEnd)) || 
+                    sb.charAt(numEnd) == '.' || 
+                    sb.charAt(numEnd) == 'E' || 
+                    sb.charAt(numEnd) == 'e' ||
+                    ((sb.charAt(numEnd) == '-' || sb.charAt(numEnd) == '+') && numEnd > 0 &&
+                    (sb.charAt(numEnd - 1) == 'E' || sb.charAt(numEnd - 1) == 'e')))) {
                 numEnd++;
             }
 
@@ -579,17 +598,14 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
     }
 
     private boolean isNumberChar(char c, int pos, String expr) {
-        return Character.isDigit(c) ||
-            c == '.' ||
-            c == 'E' || 
-            c == 'e' ||
-            // Handle negative number or sign after operator
-            (c == '-' && (pos == 0 || "+-*/^(".indexOf(expr.charAt(pos - 1)) >= 0)) ||
-            // Handle sign after exponent (E or e)
-            ((c == '+' || c == '-') && pos > 0 && 
-                (expr.charAt(pos - 1) == 'E' || expr.charAt(pos - 1) == 'e'));
+    return Character.isDigit(c)
+        || c == '.'
+        || c == 'E'
+        || c == 'e'
+        || (c == '-' && (pos == 0 || "+-*/^(".indexOf(expr.charAt(pos - 1)) >= 0))
+        || ((c == '+' || c == '-') && pos > 0 && 
+            (expr.charAt(pos - 1) == 'E' || expr.charAt(pos - 1) == 'e'));
     }
-
 
     private BigDecimal performBasicOperation(BigDecimal a, BigDecimal b, char op) throws Exception {
         switch (op) {
@@ -603,6 +619,13 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
                 return a.divide(b, MathContext.DECIMAL128);
             default: throw new Exception("Invalid operator");
         }
+    }
+
+    private BigDecimal evaluateExpression(String expr) throws Exception {
+        expr = expr.trim();
+        expr = processSquareRoots(expr);
+        expr = processPercentages(expr);
+        return evaluateFinal(expr);
     }
 
     public static void main(String[] args) {
