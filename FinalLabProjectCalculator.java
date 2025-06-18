@@ -1,3 +1,4 @@
+// Import necessary libraries for GUI, math operations, and event handling
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -8,35 +9,42 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+// Main calculator class extending JFrame
 public class FinalLabProjectCalculator extends JFrame implements ActionListener {
     
+    // Constants for button size and max input digits
     private final int BUTTON_SIZE = 60;
     private final int MAX_DIGITS = 30;
     
-    private JTextField expressionField;
-    private JTextField resultField;
-    private StringBuilder currentInput = new StringBuilder();
-    private boolean hasDecimal = false;
-    private boolean hasExponent = false;
-    private boolean hasOperator = false;
-    
-    private Timer buttonFlashTimer;
+    // UI components and state variables
+    private JTextField expressionField;  // Shows current expression
+    private JTextField resultField;     // Shows calculation result
+    private StringBuilder currentInput = new StringBuilder();  // Stores user input
+    private boolean hasDecimal = false;  // Tracks if current number has decimal
+    private boolean hasExponent = false; // Tracks if expression has exponent
+    private boolean hasOperator = false; // Tracks if expression has operator
+    private Timer buttonFlashTimer;      // For button animation
 
+    // Constructor sets up the calculator UI
     public FinalLabProjectCalculator() {
         setTitle("Calculator");
+        // Layout dimensions
         int cols = 4;
         int rows = 6;
         int gap = 8;
 
+        // Calculate panel size
         int panelWidth = (BUTTON_SIZE + gap) * cols + gap;
         int panelHeight = (BUTTON_SIZE + gap) * rows + gap;
         int displayHeight = 80;
 
+        // Set window properties
         setSize(panelWidth + 30, panelHeight + displayHeight + 50);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
 
+        // Main panel with border layout
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(new Color(188, 214, 180));
 
@@ -44,6 +52,7 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
         JPanel displayPanel = new JPanel(new GridLayout(2, 1));
         displayPanel.setPreferredSize(new Dimension(panelWidth, displayHeight));
 
+        // Expression field setup
         expressionField = new JTextField();
         expressionField.setEditable(false);
         expressionField.setFocusable(false);
@@ -52,6 +61,7 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
         expressionField.setHorizontalAlignment(SwingConstants.RIGHT);
         expressionField.setBorder(BorderFactory.createEmptyBorder(5, 10, 2, 10));
 
+        // Result field setup
         resultField = new JTextField();
         resultField.setEditable(false);
         resultField.setFocusable(false);
@@ -60,6 +70,7 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
         resultField.setHorizontalAlignment(SwingConstants.RIGHT);
         resultField.setBorder(BorderFactory.createEmptyBorder(2, 10, 5, 10));
 
+        // Add fields to display panel
         displayPanel.add(expressionField);
         displayPanel.add(resultField);
         mainPanel.add(displayPanel, BorderLayout.NORTH);
@@ -69,6 +80,7 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(gap, gap, gap, gap));
         buttonPanel.setBackground(new Color(188, 214, 180));
 
+        // Button layout definition
         String[][] layout = {
             {"%", "^", "C", "←"},
             {"√", "/", "*", "-"},
@@ -78,17 +90,20 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
             {"+/-", "0", ".", ""}
         };
 
+        // Grid layout constraints
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(gap / 2, gap / 2, gap / 2, gap / 2);
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
 
+        // Create and add buttons to panel
         for (int row = 0; row < layout.length; row++) {
             for (int col = 0; col < layout[row].length; col++) {
                 String text = layout[row][col];
                 if (text.equals("")) continue;
 
+                // Create custom rounded button
                 RoundedButton button = new RoundedButton(text);
                 button.setFont(new Font("Arial", Font.BOLD, 18));
                 button.setBackground(new Color(142, 180, 123));
@@ -100,6 +115,7 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
                 gbc.gridx = col;
                 gbc.gridy = row;
 
+                // Special button sizing
                 if (text.equals("0") && row == 5 && col == 1) {
                     gbc.gridwidth = 1;
                 } else if (text.equals("+") && row == 2) {
@@ -122,12 +138,14 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
         mainPanel.add(buttonPanel, BorderLayout.CENTER);
         add(mainPanel);
         
+        // Button flash animation timer
         buttonFlashTimer = new Timer(150, e -> {
             buttonFlashTimer.stop();
         });
         buttonFlashTimer.setRepeats(false);
     }
 
+    // Custom rounded button class with hover effects
     class RoundedButton extends JButton {
         private boolean hovered = false;
         private boolean pressed = false;
@@ -141,26 +159,16 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
             setForeground(new Color(56, 20, 71));
             setContentAreaFilled(false);
             
+            // Mouse listeners for hover/press effects
             addMouseListener(new MouseAdapter() {
-                @Override public void mouseEntered(MouseEvent e) { 
-                    hovered = true; 
-                    repaint(); 
-                }
-                @Override public void mouseExited(MouseEvent e) { 
-                    hovered = false; 
-                    repaint(); 
-                }
-                @Override public void mousePressed(MouseEvent e) { 
-                    pressed = true; 
-                    repaint();
-                }
-                @Override public void mouseReleased(MouseEvent e) { 
-                    pressed = false; 
-                    repaint(); 
-                }
+                @Override public void mouseEntered(MouseEvent e) { hovered = true; repaint(); }
+                @Override public void mouseExited(MouseEvent e) { hovered = false; repaint(); }
+                @Override public void mousePressed(MouseEvent e) { pressed = true; repaint(); }
+                @Override public void mouseReleased(MouseEvent e) { pressed = false; repaint(); }
             });
         }
 
+        // Custom painting for rounded corners
         @Override protected void paintComponent(Graphics g) {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -168,14 +176,8 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
             int width = getWidth(), height = getHeight();
             int arc = Math.round(Math.min(width, height) * 0.15f);
             
-            Color fill;
-            if (pressed) {
-                fill = pressedColor;
-            } else if (hovered) {
-                fill = hoverColor;
-            } else {
-                fill = baseColor;
-            }
+            // Choose color based on button state
+            Color fill = pressed ? pressedColor : hovered ? hoverColor : baseColor;
             
             g2.setColor(fill);
             g2.fillRoundRect(0, 0, width, height, arc, arc);
@@ -187,6 +189,7 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
         @Override protected void paintBorder(Graphics g) {}
     }
 
+    // Count digits in current input (for max digit limit)
     private int countDigits(StringBuilder sb) {
         int count = 0;
         for (int i = 0; i < sb.length(); i++) {
@@ -195,18 +198,19 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
         return count;
     }
 
+    // Format result with appropriate precision and scientific notation
     private String formatResult(BigDecimal result) {
-        if (result.compareTo(BigDecimal.ZERO) == 0) {
-            return "0";
-        }
+        if (result.compareTo(BigDecimal.ZERO) == 0) return "0";
 
         boolean isExponentiation = currentInput.toString().contains("^");
         BigDecimal absResult = result.abs();
         
+        // Determine if scientific notation is needed
         boolean useScientific = absResult.compareTo(BigDecimal.valueOf(1000000)) >= 0 ||  
                             (absResult.compareTo(BigDecimal.valueOf(0.001)) <= 0 &&    
                             absResult.compareTo(BigDecimal.ZERO) != 0);
 
+        // Special formatting for exponentiation
         if (isExponentiation) {
             String formatted = result.setScale(12, RoundingMode.HALF_UP)
                                 .stripTrailingZeros()
@@ -217,21 +221,26 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
             return formatted;
         }
 
+        // Apply scientific notation if needed
         if (useScientific) {
             return new DecimalFormat("0.#############E0").format(result);
         }
 
+        // Special formatting for square roots
         if (currentInput.toString().contains("√")) {
             return String.format("%.10f", result).replaceAll("0*$", "").replaceAll("\\.$", "");
         }
         
+        // Special formatting for division
         if (currentInput.toString().contains("/")) {
             return result.setScale(12, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
         }
         
+        // Default formatting
         return result.stripTrailingZeros().toPlainString();
     }
 
+    // Adjust font size to fit result in display
     private void adjustResultFontSize() {
         String text = resultField.getText();
         if (text.isEmpty()) return;
@@ -240,6 +249,7 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
         int stringWidth = resultField.getFontMetrics(currentFont).stringWidth(text);
         int componentWidth = resultField.getWidth() - 20;
         
+        // Scale font down if needed, with minimum size of 12
         if (stringWidth > componentWidth) {
             float newSize = currentFont.getSize2D() * ((float)componentWidth / (float)stringWidth);
             newSize = Math.max(12, newSize);
@@ -249,8 +259,10 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
         }
     }
 
+    // Power function with BigDecimal support
     private BigDecimal power(BigDecimal base, BigDecimal exponent) {
         try {
+            // Handle integer exponents
             if (exponent.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) == 0) {
                 if (exponent.compareTo(BigDecimal.ZERO) < 0) {
                     return BigDecimal.ONE.divide(
@@ -261,23 +273,26 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
                 return base.pow(exponent.intValueExact(), MathContext.DECIMAL128);
             }
 
+            // Handle fractional exponents with double conversion
             MathContext mc = new MathContext(20, RoundingMode.HALF_UP);
             double result = Math.pow(base.doubleValue(), exponent.doubleValue());
             return new BigDecimal(result).round(mc);
 
         } catch (ArithmeticException e) {
+            // Fallback to double if exact conversion fails
             double result = Math.pow(base.doubleValue(), exponent.doubleValue());
             return new BigDecimal(result);
         }
     }
 
+    // Handle button clicks
     @Override
     public void actionPerformed(ActionEvent e) {
         String command = ((JButton) e.getSource()).getText();
         char last = currentInput.length() > 0 ? currentInput.charAt(currentInput.length() - 1) : ' ';
 
         switch (command) {
-            case "C":
+            case "C":  // Clear everything
                 currentInput.setLength(0);
                 expressionField.setText("");
                 resultField.setText("");
@@ -286,7 +301,7 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
                 hasOperator = false;
                 break;
 
-            case "←":
+            case "←":  // Backspace
                 if (currentInput.length() > 0) {
                     char lastChar = currentInput.charAt(currentInput.length() - 1);
                     if (lastChar == '.') hasDecimal = false;
@@ -297,25 +312,17 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
                 }
                 break;
 
-            case "+/-":
-                if (currentInput.length() == 0) {
-                    // Don't allow just a negative sign with no number
-                    return;
-                } else if ("+-*/^%".indexOf(last) >= 0) {
-                    // Don't allow negative sign after operator (except for subtraction case)
-                    if (last != '-') {
-                        return;
-                    }
+            case "+/-":  // Toggle sign
+                if (currentInput.length() == 0) return;
+                else if ("+-*/^%".indexOf(last) >= 0) {
+                    if (last != '-') return;
                 } else {
                     int numStart = findNumberStart(currentInput.toString(), currentInput.length() - 1);
                     if (numStart >= 0) {
                         String numberStr = currentInput.substring(numStart);
-                        // Prevent toggling if we already have a negative sign
                         if (numberStr.startsWith("-") && numberStr.length() > 1) {
-                            // Remove the negative sign
                             currentInput.replace(numStart, currentInput.length(), numberStr.substring(1));
                         } else if (!numberStr.startsWith("-") && numberStr.length() > 0) {
-                            // Add negative sign only if there's a number
                             currentInput.replace(numStart, currentInput.length(), "-" + numberStr);
                         }
                     }
@@ -323,7 +330,7 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
                 expressionField.setText(currentInput.toString());
                 break;
 
-            case "=":
+            case "=":  // Evaluate expression
                 if (currentInput.length() == 0) return;
                 try {
                     BigDecimal result = evaluateExpression(currentInput.toString());
@@ -342,7 +349,7 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
                 hasOperator = false;
                 break;
 
-            case "%":
+            case "%":  // Percentage
                 if (countDigits(currentInput) >= MAX_DIGITS) return;
                 if (Character.isDigit(last) || last == 'E' || last == 'e') {
                     currentInput.append('%');
@@ -351,7 +358,7 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
                 expressionField.setText(currentInput.toString());
                 break;
 
-            case "^":
+            case "^":  // Exponent
                 if (countDigits(currentInput) >= MAX_DIGITS) return;
                 if (!hasExponent && (Character.isDigit(last) || last == 'E' || last == 'e' || last == ')')) {
                     currentInput.append('^');
@@ -362,7 +369,7 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
                 expressionField.setText(currentInput.toString());
                 break;
 
-            case ".":
+            case ".":  // Decimal point
                 if (countDigits(currentInput) >= MAX_DIGITS) return;
                 if (!hasDecimal) {
                     currentInput.append('.');
@@ -371,7 +378,7 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
                 expressionField.setText(currentInput.toString());
                 break;
 
-            case "√":
+            case "√":  // Square root
                 if (countDigits(currentInput) >= MAX_DIGITS) return;
                 if (currentInput.length() > 0) {
                     char lastChar = currentInput.charAt(currentInput.length() - 1);
@@ -384,25 +391,24 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
                 expressionField.setText(currentInput.toString());
                 break;
 
-            default:
+            default:  // Numbers and basic operators
                 if (countDigits(currentInput) >= MAX_DIGITS) return;
 
-                if ("0123456789".contains(command)) {
+                if ("0123456789".contains(command)) {  // Number input
                     if (last == '%') currentInput.append('*');
                     currentInput.append(command);
-                } else if ("+-*/".contains(command)) {
+                } else if ("+-*/".contains(command)) {  // Operator input
                     if (command.equals("-") && currentInput.length() == 0) {
                         currentInput.append("-");
                         expressionField.setText(currentInput.toString());
                         return;
                     }
                     
-                    if ("+*/".contains(command) && currentInput.length() == 0) {
-                        return;
-                    }
+                    if ("+*/".contains(command) && currentInput.length() == 0) return;
 
                     if ("+-*/".contains(String.valueOf(last))) return;
 
+                    // Evaluate current expression before applying new operator
                     if (hasOperator) {
                         try {
                             BigDecimal result = evaluateExpression(currentInput.toString());
@@ -428,14 +434,17 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
         }
     }
 
+    // Process square roots in expression
     private String processSquareRoots(String expr) throws Exception {
         StringBuilder sb = new StringBuilder(expr);
         int sqrtIndex;
         
+        // Find and process each square root
         while ((sqrtIndex = sb.lastIndexOf("√")) != -1) {
             int numStart = sqrtIndex + 1;
             int numEnd = numStart;
             
+            // Find the complete number after √
             while (numEnd < sb.length() &&
                 (Character.isDigit(sb.charAt(numEnd)) || 
                     sb.charAt(numEnd) == '.' || 
@@ -446,24 +455,26 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
                 numEnd++;
             }
 
-            if (numStart == numEnd) {
-                throw new Exception("Invalid square root");
-            }
+            if (numStart == numEnd) throw new Exception("Invalid square root");
             
+            // Calculate square root
             String numberStr = sb.substring(numStart, numEnd);
             double value = Double.parseDouble(numberStr);
             value = Math.sqrt(value);
             
+            // Replace √x with result
             sb.replace(sqrtIndex, numEnd, new BigDecimal(value).toPlainString());
         }
         
         return sb.toString();
     }
 
+    // Process percentages in expression
     private String processPercentages(String expr) throws Exception {
         StringBuilder sb = new StringBuilder(expr);
         int percentIndex;
         
+        // Find and process each percentage
         while ((percentIndex = sb.indexOf("%")) != -1) {
             int numStart = findNumberStart(sb.toString(), percentIndex - 1);
             
@@ -471,10 +482,12 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
                 throw new Exception("Invalid percentage expression");
             }
             
+            // Convert percentage to decimal
             String numberStr = sb.substring(numStart, percentIndex);
             BigDecimal number = parseNumber(numberStr);
             BigDecimal percentValue = number.divide(BigDecimal.valueOf(100), MathContext.DECIMAL128);
             
+            // Handle percentage in context (e.g., 50 + 20% = 50 + 10)
             if (numStart > 0) {
                 char prevChar = sb.charAt(numStart - 1);
                 if ("+-*/".indexOf(prevChar) >= 0) {
@@ -492,12 +505,14 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
                 }
             }
         
+            // Replace percentage with its decimal value
             sb.replace(numStart, percentIndex + 1, formatResult(percentValue));
         }
         
         return sb.toString();
     }
 
+    // Parse string to BigDecimal
     private BigDecimal parseNumber(String numStr) throws Exception {
         try {
             return new BigDecimal(numStr);
@@ -510,6 +525,7 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
         }
     }
 
+    // Perform percentage operations (a + b% = a + a*b/100)
     private BigDecimal performOperation(BigDecimal left, BigDecimal right, char op) throws Exception {
         switch (op) {
             case '+': return left.add(left.multiply(right));
@@ -520,11 +536,13 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
         }
     }
 
+    // Find start of number in expression
     private int findNumberStart(String expr, int fromIndex) {
         if (fromIndex < 0) return 0;
         
         int i = fromIndex;
         
+        // Scan backwards for number components
         while (i >= 0) {
             char c = expr.charAt(i);
             if (Character.isDigit(c) || c == '.' || c == 'E' || c == 'e') {
@@ -542,11 +560,13 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
         return i + 1;
     }
 
+    // Final evaluation of processed expression
     private BigDecimal evaluateFinal(String expr) throws Exception {
         List<BigDecimal> numbers = new ArrayList<>();
         List<Character> operators = new ArrayList<>();
         StringBuilder num = new StringBuilder();
         
+        // Parse numbers and operators
         for (int i = 0; i < expr.length(); i++) {
             char c = expr.charAt(i);
             
@@ -597,6 +617,7 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
         return numbers.isEmpty() ? BigDecimal.ZERO : numbers.get(0);
     }
 
+    // Check if character is part of a number
     private boolean isNumberChar(char c, int pos, String expr) {
     return Character.isDigit(c)
         || c == '.'
@@ -607,27 +628,28 @@ public class FinalLabProjectCalculator extends JFrame implements ActionListener 
             (expr.charAt(pos - 1) == 'E' || expr.charAt(pos - 1) == 'e'));
     }
 
+    // Basic arithmetic operations
     private BigDecimal performBasicOperation(BigDecimal a, BigDecimal b, char op) throws Exception {
         switch (op) {
             case '+': return a.add(b, MathContext.DECIMAL128);
             case '-': return a.subtract(b, MathContext.DECIMAL128);
             case '*': return a.multiply(b, MathContext.DECIMAL128);
             case '/': 
-                if (b.compareTo(BigDecimal.ZERO) == 0) {
-                    throw new Exception("Division by zero");
-                }
+                if (b.compareTo(BigDecimal.ZERO) == 0) throw new Exception("Division by zero");
                 return a.divide(b, MathContext.DECIMAL128);
             default: throw new Exception("Invalid operator");
         }
     }
 
+    // Main evaluation method
     private BigDecimal evaluateExpression(String expr) throws Exception {
         expr = expr.trim();
-        expr = processSquareRoots(expr);
-        expr = processPercentages(expr);
-        return evaluateFinal(expr);
+        expr = processSquareRoots(expr);  // Handle √ operations
+        expr = processPercentages(expr);  // Handle % operations
+        return evaluateFinal(expr);       // Evaluate remaining expression
     }
 
+    // Main method to launch calculator
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             FinalLabProjectCalculator calculator = new FinalLabProjectCalculator();
